@@ -3,6 +3,7 @@ from logger.my_logger import MyLogger
 from uuid import uuid4
 import boto3
 from botocore.client import BaseClient
+from utils import get_environ_values
 
 logger = MyLogger(__name__)
 environ_names = ['STATE_MACHINE_ARN']
@@ -14,4 +15,5 @@ def handler(event, context):
 
 
 def main(sfn_client: BaseClient = boto3.client('stepfunctions')):
-    pass
+    state_machine_arn, = get_environ_values(environ_names)
+    logger.info(state_machine_arn)
