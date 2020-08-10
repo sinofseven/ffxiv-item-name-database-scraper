@@ -3,7 +3,7 @@ import os
 
 
 def get_environ_values(environ_names: List[str]) -> List[Optional[str]]:
-    def process() -> Generator[str]:
+    def process() -> Generator:
         for name in environ_names:
             yield os.getenv(name)
 
