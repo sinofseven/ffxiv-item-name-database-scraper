@@ -8,7 +8,7 @@ logger = MyLogger(__name__)
 environ_names = ['STATE_MACHINE_ARN']
 
 
-@lambda_auto_logging()
+@lambda_auto_logging(*environ_names)
 def handler(event, context):
     main()
 
