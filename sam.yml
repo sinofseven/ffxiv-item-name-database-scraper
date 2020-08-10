@@ -1,0 +1,34 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  AlertSNSTopicArn:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /ffxiv-item-name-database/alert-sns-topic
+
+Globals:
+  Function:
+    Runtime: python3.8
+    Timeout: 60
+    AutoPublishAlias: scrape
+    CodeUri: src
+    MemorySize: 256
+
+Resources:
+  CallSFnFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handlers.call_sfn.handler
+      Policies:
+        - arn:aws:iam::aws:policy/AWSStepFunctionsFullAccess
+      Environment:
+        Variables:
+          STATE_MACHINE_ARN: sinofseven
+
+  CallSFnLogStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: log_group.yml
+      Parameters:
+        FunctionName: !Ref CallSFnFunction
+        AlartSnsTopicArn: !Ref AlertSNSTopicArn
