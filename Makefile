@@ -11,7 +11,7 @@ package:
 	poetry run sam package --s3-bucket $$SAM_ARTIFACT_BUCKET --output-template-file $(template_path) --template-file sam.yml
 
 deploy: package
-	poetry run sam deploy \
+	poetry run aws cloudformation deploy \
 		--stack-name $(stack_name) \
 		--template-file $(template_path) \
 		--capabilities CAPABILITY_IAM \
