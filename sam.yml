@@ -6,13 +6,20 @@ Parameters:
     Type: AWS::SSM::Parameter::Value<String>
     Default: /ffxiv-item-name-database/alert-sns-topic
 
+  BeautifulSoup4LayerArn:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /ffxiv-item-name-database/layer/beautiful-soup-4
+
 Globals:
   Function:
     Runtime: python3.8
-    Timeout: 60
+    Timeout: 900
     AutoPublishAlias: scrape
     CodeUri: src
     MemorySize: 256
+    Environment:
+      Variables:
+        TMP_DATA_BUCKET_NAME: !Ref TmpDataBucket
 
 Resources:
   CallSFnFunction:
@@ -31,4 +38,92 @@ Resources:
       TemplateURL: log_group.yml
       Parameters:
         FunctionName: !Ref CallSFnFunction
+        AlartSnsTopicArn: !Ref AlertSNSTopicArn
+
+  TmpDataBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      LifecycleConfiguration:
+        Rules:
+          - ExpirationInDays: 90
+            Status: Enabled
+
+  ScrapeEorzeaDatabaseFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handlers.scrape_eorzea_database.handler
+      Policies:
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+      Layers:
+        - !Ref BeautifulSoup4LayerArn
+
+  ScrapeEorzeaDatabaseLogStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: log_group.yml
+      Parameters:
+        FunctionName: !Ref ScrapeEorzeaDatabaseFunction
+        AlartSnsTopicArn: !Ref AlertSNSTopicArn
+
+  ScrapeXivApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handlers.scrape_xivapi.handler
+      Policies:
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+
+  ScrapeXivApiLogStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: log_group.yml
+      Parameters:
+        FunctionName: !Ref ScrapeXivApiFunction
+        AlartSnsTopicArn: !Ref AlertSNSTopicArn
+
+  MergeEorzeaDatabaseFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handlers.merge_eorzea_database.handler
+      Policies:
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+      MemorySize: 3008
+
+  MergeEorzeaDatabaseLogStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: log_group.yml
+      Parameters:
+        FunctionName: !Ref MergeEorzeaDatabaseFunction
+        AlartSnsTopicArn: !Ref AlertSNSTopicArn
+
+  MergeXivApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handlers.merge_xivapi.handler
+      Policies:
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+      MemorySize: 3008
+
+  MergeXivApiLogStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: log_group.yml
+      Parameters:
+        FunctionName: !Ref MergeXivApiFunction
+        AlartSnsTopicArn: !Ref AlertSNSTopicArn
+
+  MergeItemDataFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handlers.merge_item_data.handler
+      Policies:
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+      MemorySize: 3008
+
+  MergeItemDataLogStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: log_group.yml
+      Parameters:
+        FunctionName: !Ref MergeItemDataFunction
         AlartSnsTopicArn: !Ref AlertSNSTopicArn

@@ -3,6 +3,10 @@ SHELL = /usr/bin/env bash -xeuo pipefail
 stack_name:=ffxiv-item-name-database-scraper
 template_path:=template.yml
 
+format:
+	poetry run isort src/
+	poetry run black src/
+
 package:
 	poetry run sam package --s3-bucket $$SAM_ARTIFACT_BUCKET --output-template-file $(template_path) --template-file sam.yml
 

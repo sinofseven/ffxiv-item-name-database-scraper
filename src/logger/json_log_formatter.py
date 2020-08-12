@@ -3,12 +3,18 @@ import logging
 import os
 from decimal import Decimal
 
+from boto3.dynamodb.conditions import AttributeBase, ConditionBase
+
 LAMBDA_REQUEST_ID_ENVIRONMENT_VALUE_NAME = "LAMBDA_REQUEST_ID"
 
 
 def default(obj):
     if isinstance(obj, Decimal):
         return int(obj) if int(obj) == obj else float(obj)
+    if isinstance(obj, ConditionBase):
+        return obj.get_expression()
+    if isinstance(obj, AttributeBase):
+        return obj.name
     try:
         return str(obj)
     except Exception:
@@ -17,7 +23,11 @@ def default(obj):
 
 class JsonLogFormatter(logging.Formatter):
     def format(self, record):
-        result = {"lambda_request_id": os.environ.get(LAMBDA_REQUEST_ID_ENVIRONMENT_VALUE_NAME)}
+        result = {
+            "lambda_request_id": os.environ.get(
+                LAMBDA_REQUEST_ID_ENVIRONMENT_VALUE_NAME
+            )
+        }
 
         for attr, value in record.__dict__.items():
             if attr == "asctime":

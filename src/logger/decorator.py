@@ -18,14 +18,18 @@ def get_environments(extra_environment_value_names: List[str]) -> dict:
 
 
 def lambda_auto_logging(
-    *extra_environment_value_names: str, throw_exception: bool = True, alert_unexpected_exception: bool = True
+    *extra_environment_value_names: str,
+    throw_exception: bool = True,
+    alert_unexpected_exception: bool = True,
 ) -> Callable:
     def wrapper(handler):
         @wraps(handler)
         def decorator(event, context):
             try:
                 # LogにLambdaのRequestIdを出力するために環境変数として保存する
-                os.environ[LAMBDA_REQUEST_ID_ENVIRONMENT_VALUE_NAME] = context.aws_request_id
+                os.environ[
+                    LAMBDA_REQUEST_ID_ENVIRONMENT_VALUE_NAME
+                ] = context.aws_request_id
             except Exception as e:
                 logger.warning(f"Exception occurred: {e}")
 
@@ -33,8 +37,14 @@ def lambda_auto_logging(
                 logger.info(
                     "event, python version, boto3 version, environment values",
                     event=event,
-                    versions={"python": sys.version, "boto3": boto3.__version__, "botocore": botocore.__version__},
-                    environment_values=get_environments(list(extra_environment_value_names)),
+                    versions={
+                        "python": sys.version,
+                        "boto3": boto3.__version__,
+                        "botocore": botocore.__version__,
+                    },
+                    environment_values=get_environments(
+                        list(extra_environment_value_names)
+                    ),
                 )
             except Exception as e:
                 logger.warning(f"Exception occurred: {e}")
