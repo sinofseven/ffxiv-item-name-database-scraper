@@ -131,3 +131,5 @@ dmypy.json
 # custom
 /tmp/
 /.idea/
+/.envrc
+/template.yml
