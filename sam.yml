@@ -30,7 +30,7 @@ Resources:
         - arn:aws:iam::aws:policy/AWSStepFunctionsFullAccess
       Environment:
         Variables:
-          STATE_MACHINE_ARN: sinofseven
+          STATE_MACHINE_ARN: !Ref ItemDataScrapeStateMachine
 
   CallSFnLogStack:
     Type: AWS::CloudFormation::Stack
