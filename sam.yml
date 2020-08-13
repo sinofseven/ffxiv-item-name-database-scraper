@@ -127,3 +127,75 @@ Resources:
       Parameters:
         FunctionName: !Ref MergeItemDataFunction
         AlartSnsTopicArn: !Ref AlertSNSTopicArn
+
+  ItemDataScrapeRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: !Sub states.${AWS::Region}.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaRole
+
+  ItemDataScrapeStateMachine:
+    Type: AWS::StepFunctions::StateMachine
+    Properties:
+      RoleArn: !GetAtt ItemDataScrapeRole.Arn
+      DefinitionString: !Sub |-
+        {
+          "Comment": "Scrape FF14 Item",
+          "StartAt": "",
+          "States": {
+            "ScrapeEorzeaDatabase": {
+              "Type": "Task",
+              "Resource": "${ScrapeEorzeaDatabaseFunction.Alias}",
+              "Next": "CheckScrapeEorzeaDatabase"
+            },
+            "CheckScrapeEorzeaDatabase": {
+              "Type": "Choice",
+              "Default": "ScrapeEorzeaDatabase",
+              "Choices": [
+                {
+                  "Variable": "$.database_page",
+                  "NumericEquals": 0,
+                  "Next": "ScrapeXivApi"
+                }
+              ]
+            },
+            "ScrapeXivApi": {
+              "Type": "Task",
+              "Resource": "${ScrapeXivApiFunction.Alias}",
+              "Next": "CheckScrapeXivApi"
+            },
+            "CheckScrapeXivApi": {
+              "Type": "Choice",
+              "Default": "ScrapeXivApi",
+              "Choices": [
+                {
+                  "Variable": "$.xivapi_page",
+                  "NumericEquals": 0,
+                  "Next": "MergeEorzeaDatabase"
+                }
+              ]
+            },
+            "MergeEorzeaDatabase": {
+              "Type": "Task",
+              "Resource": "${MergeEorzeaDatabaseFunction.Alias}",
+              "Next": "MergeXivApi"
+            },
+            "MergeXivApi": {
+              "Type": "Task",
+              "Resource": "${MergeXivApiFunction.Alias}",
+              "Next": "MergeItemData"
+            },
+            "MergeItemData": {
+              "Type": "Task",
+              "Resource": "${MergeItemDataFunction.Alias}",
+              "End": true
+            }
+          }
+        }
