@@ -157,7 +157,7 @@ Resources:
             },
             "CheckScrapeEorzeaDatabase": {
               "Type": "Choice",
-              "Default": "WaitScrapeEorzeaDatabase",
+              "Default": "ScrapeEorzeaDatabase",
               "Choices": [
                 {
                   "Variable": "$.database_page",
@@ -166,11 +166,6 @@ Resources:
                 }
               ]
             },
-            "WaitScrapeEorzeaDatabase": {
-              "Type": "Wait",
-              "Seconds": 0.8,
-              "Next": "ScrapeEorzeaDatabase"
-            },
             "ScrapeXivApi": {
               "Type": "Task",
               "Resource": "${ScrapeXivApiFunction.Alias}",
@@ -178,7 +173,7 @@ Resources:
             },
             "CheckScrapeXivApi": {
               "Type": "Choice",
-              "Default": "WaitScrapeXivApi",
+              "Default": "ScrapeXivApi",
               "Choices": [
                 {
                   "Variable": "$.xivapi_page",
@@ -186,11 +181,6 @@ Resources:
                   "Next": "MergeEorzeaDatabase"
                 }
               ]
-            },
-            "WaitScrapeXivApi": {
-              "Type": "Wait",
-              "Seconds": 0.8,
-              "Next": "ScrapeXivApi"
             },
             "MergeEorzeaDatabase": {
               "Type": "Task",

@@ -14,11 +14,11 @@ environ_names = ["STATE_MACHINE_ARN"]
 
 
 @lambda_auto_logging(*environ_names)
-def handler(event, context):
-    main()
+def handler(event, context) -> str:
+    return main()
 
 
-def main(sfn_client: BaseClient = boto3.client("stepfunctions")):
+def main(sfn_client: BaseClient = boto3.client("stepfunctions")) -> str:
     (state_machine_arn,) = get_environ_values(environ_names)
 
     exec_id = f"{create_reversed_timestamp_id()}-{uuid4()}"
@@ -30,6 +30,7 @@ def main(sfn_client: BaseClient = boto3.client("stepfunctions")):
     resp = sfn_client.start_execution(**option)
     logger.info("result start_execution", result=resp)
 
+    return exec_id
 
 def create_reversed_timestamp_id() -> str:
     max_number = 9007199254740991
