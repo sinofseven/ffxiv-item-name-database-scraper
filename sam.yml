@@ -148,7 +148,7 @@ Resources:
       DefinitionString: !Sub |-
         {
           "Comment": "Scrape FF14 Item",
-          "StartAt": "",
+          "StartAt": "ScrapeEorzeaDatabase",
           "States": {
             "ScrapeEorzeaDatabase": {
               "Type": "Task",
